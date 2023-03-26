@@ -20,6 +20,14 @@ type Provider struct {
 	config       *oauth2.Config
 }
 
+type UserInfo struct {
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	Locale        string `json:"locale"`
+}
+
 func NewProvider(providerType ProviderType, clientID, clientSecret, redirectURL string) *Provider {
 	var provider *Provider
 	switch providerType {
@@ -56,4 +64,22 @@ func (p *Provider) AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) stri
 
 func (p *Provider) Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
 	return p.config.Exchange(ctx, code, opts...)
+}
+
+func (p *Provider) GetUserInfo(ctx context.Context, token *oauth2.Token) (*UserInfo, error) {
+	switch p.providerType {
+	case GoogleOAuth2ProviderType:
+		return getGoogleUserInfo(ctx, p.config, token)
+	case FacebookOAuth2ProviderType:
+		return getFacebookUserInfo(ctx, p.config, token)
+	case LineOAuth2ProviderType:
+		return getLineUserInfo(ctx, p.config, token)
+	default:
+		panic("Invalid OAuth2 provider type")
+	}
+}
+
+// refresh
+func (p *Provider) RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
+	return p.config.TokenSource(ctx, token).Token()
 }

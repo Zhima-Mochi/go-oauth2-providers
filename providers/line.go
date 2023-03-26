@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"context"
+
 	"golang.org/x/oauth2"
 )
 
@@ -22,4 +24,8 @@ func newLine(config *oauth2.Config) *Provider {
 	return &Provider{
 		config: config,
 	}
+}
+
+func getLineUserInfo(ctx context.Context, config *oauth2.Config, accessToken *oauth2.Token) (*UserInfo, error) {
+	return nil, nil
 }
