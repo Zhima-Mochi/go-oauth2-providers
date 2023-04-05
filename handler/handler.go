@@ -1,4 +1,4 @@
-package goauthproviders
+package handler
 
 import (
 	"context"

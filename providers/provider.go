@@ -20,6 +20,10 @@ type Provider struct {
 	config       *oauth2.Config
 }
 
+func (p *Provider) SetConfig(config *oauth2.Config) {
+	p.config = config
+}
+
 type UserInfo struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
