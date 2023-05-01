@@ -1,30 +1,29 @@
-package provider
+package oauth2providers
 
 import (
 	"context"
 	"encoding/json"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/facebook"
 )
 
-func newGoogle(config *oauth2.Config) *Provider {
-	if config == nil {
-		config = &oauth2.Config{}
-	}
-	config.Endpoint = google.Endpoint
-	config.Scopes = []string{
-		"https://www.googleapis.com/auth/userinfo.email",
-		"https://www.googleapis.com/auth/userinfo.profile",
+func newFacebook(options *authOptions) *Provider {
+	options.Endpoint = facebook.Endpoint
+	if options.Scopes == nil {
+		options.Scopes = []string{
+			"email",
+			"public_profile",
+		}
 	}
 	return &Provider{
-		config: config,
+		authOptions: options,
 	}
 }
 
-func getGoogleUserInfo(ctx context.Context, config *oauth2.Config, accessToken *oauth2.Token) (*UserInfo, error) {
-	client := config.Client(ctx, accessToken)
-	resp, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+func getFacebookUserInfo(ctx context.Context, options *authOptions, accessToken *oauth2.Token) (*UserInfo, error) {
+	client := options.Client(ctx, accessToken)
+	resp, err := client.Get("https://graph.facebook.com/v2.12/me?fields=id,email,name,picture")
 	if err != nil {
 		return nil, err
 	}

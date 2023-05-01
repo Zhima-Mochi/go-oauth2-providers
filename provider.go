@@ -1,4 +1,4 @@
-package provider
+package oauth2providers
 
 import (
 	"context"
@@ -17,11 +17,7 @@ const (
 
 type Provider struct {
 	providerType ProviderType
-	config       *oauth2.Config
-}
-
-func (p *Provider) SetConfig(config *oauth2.Config) {
-	p.config = config
+	authOptions  *authOptions
 }
 
 type UserInfo struct {
@@ -32,29 +28,21 @@ type UserInfo struct {
 	Locale        string `json:"locale"`
 }
 
-func NewProvider(providerType ProviderType, clientID, clientSecret, redirectURL string) *Provider {
+func NewProvider(providerType ProviderType, authOptions *authOptions) *Provider {
 	var provider *Provider
 	switch providerType {
 	case GoogleOAuth2ProviderType:
 		provider = newGoogle(
-			&oauth2.Config{
-				ClientID:     clientID,
-				ClientSecret: clientSecret,
-				RedirectURL:  redirectURL,
-			},
+			authOptions,
 		)
 	case FacebookOAuth2ProviderType:
-		provider = newFacebook(&oauth2.Config{
-			ClientID:     clientID,
-			ClientSecret: clientSecret,
-			RedirectURL:  redirectURL,
-		})
+		provider = newFacebook(
+			authOptions,
+		)
 	case LineOAuth2ProviderType:
-		provider = newLine(&oauth2.Config{
-			ClientID:     clientID,
-			ClientSecret: clientSecret,
-			RedirectURL:  redirectURL,
-		})
+		provider = newLine(
+			authOptions,
+		)
 	default:
 		panic("Invalid OAuth2 provider type")
 	}
@@ -63,21 +51,21 @@ func NewProvider(providerType ProviderType, clientID, clientSecret, redirectURL 
 }
 
 func (p *Provider) AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
-	return p.config.AuthCodeURL(state, opts...)
+	return p.authOptions.AuthCodeURL(state, opts...)
 }
 
 func (p *Provider) Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
-	return p.config.Exchange(ctx, code, opts...)
+	return p.authOptions.Exchange(ctx, code, opts...)
 }
 
 func (p *Provider) GetUserInfo(ctx context.Context, token *oauth2.Token) (*UserInfo, error) {
 	switch p.providerType {
 	case GoogleOAuth2ProviderType:
-		return getGoogleUserInfo(ctx, p.config, token)
+		return getGoogleUserInfo(ctx, p.authOptions, token)
 	case FacebookOAuth2ProviderType:
-		return getFacebookUserInfo(ctx, p.config, token)
+		return getFacebookUserInfo(ctx, p.authOptions, token)
 	case LineOAuth2ProviderType:
-		return getLineUserInfo(ctx, p.config, token)
+		return getLineUserInfo(ctx, p.authOptions, token)
 	default:
 		panic("Invalid OAuth2 provider type")
 	}
@@ -85,5 +73,5 @@ func (p *Provider) GetUserInfo(ctx context.Context, token *oauth2.Token) (*UserI
 
 // refresh
 func (p *Provider) RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
-	return p.config.TokenSource(ctx, token).Token()
+	return p.authOptions.TokenSource(ctx, token).Token()
 }

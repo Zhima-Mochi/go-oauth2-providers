@@ -1,4 +1,4 @@
-package provider
+package oauth2providers
 
 import (
 	"context"
@@ -7,28 +7,27 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func newLine(config *oauth2.Config) *Provider {
-	if config == nil {
-		config = &oauth2.Config{}
-	}
+func newLine(options *authOptions) *Provider {
 	// line endpoint
-	config.Endpoint = oauth2.Endpoint{
+	options.Endpoint = oauth2.Endpoint{
 		AuthURL:  "https://access.line.me/oauth2/v2.1/authorize",
 		TokenURL: "https://api.line.me/oauth2/v2.1/token",
 	}
-	config.Scopes = []string{
-		"profile",
-		"openid",
-		"email",
+	if options.Scopes == nil {
+		options.Scopes = []string{
+			"profile",
+			"openid",
+			"email",
+		}
 	}
 
 	return &Provider{
-		config: config,
+		authOptions: options,
 	}
 }
 
-func getLineUserInfo(ctx context.Context, config *oauth2.Config, accessToken *oauth2.Token) (*UserInfo, error) {
-	client := config.Client(ctx, accessToken)
+func getLineUserInfo(ctx context.Context, options *authOptions, accessToken *oauth2.Token) (*UserInfo, error) {
+	client := options.Client(ctx, accessToken)
 	resp, err := client.Get("https://api.line.me/v2/profile")
 	if err != nil {
 		return nil, err
