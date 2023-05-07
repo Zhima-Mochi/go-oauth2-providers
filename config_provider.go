@@ -2,9 +2,22 @@ package oauth2providers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"golang.org/x/oauth2"
+)
+
+var (
+
+	// ErrMissingClientID is returned when the client ID is missing.
+	ErrMissingClientID = errors.New("missing client ID")
+
+	// ErrMissingClientSecret is returned when the client secret is missing.
+	ErrMissingClientSecret = errors.New("missing client secret")
+
+	// ErrMissingRedirectURL is returned when the redirect URL is missing.
+	ErrMissingRedirectURL = errors.New("missing redirect URL")
 )
 
 type ProviderConfig interface {
@@ -27,11 +40,29 @@ type providerConfig struct {
 	oauth2.Config
 }
 
-func NewProviderConfig(opts ...ProviderOption) ProviderConfig {
+func validateProviderConfig(pc *providerConfig) error {
+	if pc.clientID == "" {
+		return ErrMissingClientID
+	}
+	if pc.clientSecret == "" {
+		return ErrMissingClientSecret
+	}
+	if pc.redirectURL == "" {
+		return ErrMissingRedirectURL
+	}
+	return nil
+}
+
+func NewProviderConfig(opts ...ProviderOption) (ProviderConfig, error) {
 	pc := &providerConfig{}
 	for _, opt := range opts {
 		opt(pc)
 	}
+
+	if err := validateProviderConfig(pc); err != nil {
+		return nil, err
+	}
+
 	pc.Config = oauth2.Config{
 		ClientID:     pc.clientID,
 		ClientSecret: pc.clientSecret,
@@ -42,7 +73,7 @@ func NewProviderConfig(opts ...ProviderOption) ProviderConfig {
 			TokenURL: pc.tokenURL,
 		},
 	}
-	return pc
+	return pc, nil
 }
 
 func (pc *providerConfig) AuthCodeURL(state string, opts ...AuthCodeOption) string {

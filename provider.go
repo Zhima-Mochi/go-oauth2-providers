@@ -11,7 +11,7 @@ const (
 	GoogleOAuth2ProviderType ProviderType = iota
 	FacebookOAuth2ProviderType
 	LineOAuth2ProviderType
-	// GithubOAuth2ProviderType
+	GithubOAuth2ProviderType
 )
 
 type OAuth2Provider interface {
@@ -43,6 +43,8 @@ func NewOAuth2Provider(providerType ProviderType, providerConfig ProviderConfig)
 		provider = newFacebookProvider(providerConfig)
 	case LineOAuth2ProviderType:
 		provider = newLineProvider(providerConfig)
+	case GithubOAuth2ProviderType:
+		provider = newGithubProvider(providerConfig)
 	default:
 		return nil, fmt.Errorf("unknown OAuth2 provider type: %s", providerType)
 	}
