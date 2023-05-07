@@ -3,8 +3,6 @@ package oauth2providers
 import (
 	"context"
 	"fmt"
-
-	"golang.org/x/oauth2"
 )
 
 type ProviderType int
@@ -17,10 +15,10 @@ const (
 )
 
 type OAuth2Provider interface {
-	authCodeURL(state string, opts ...oauth2.AuthCodeOption) string
-	exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error)
-	getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error)
-	refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error)
+	authCodeURL(state string, opts ...AuthCodeOption) string
+	exchange(ctx context.Context, code string, opts ...AuthCodeOption) (Token, error)
+	getUserInfo(ctx context.Context, token Token) (UserInfo, error)
+	refreshToken(ctx context.Context, token Token) (Token, error)
 }
 
 func (t ProviderType) String() string {
