@@ -2,49 +2,68 @@ package oauth2providers
 
 import (
 	"context"
-	"encoding/json"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 )
 
-func newFacebook(options *authOptions) *Provider {
-	options.Endpoint = facebook.Endpoint
-	if options.Scopes == nil {
-		options.Scopes = []string{
-			"email",
-			"public_profile",
-		}
-	}
-	return &Provider{
-		authOptions: options,
-	}
+type facebookProvider struct {
+	ProviderConfig ProviderConfig
 }
 
-func getFacebookUserInfo(ctx context.Context, options *authOptions, accessToken *oauth2.Token) (*UserInfo, error) {
-	client := options.Client(ctx, accessToken)
+func (p *facebookProvider) authCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
+	return p.ProviderConfig.AuthCodeURL(state, opts...)
+}
+
+func (p *facebookProvider) exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
+	return p.ProviderConfig.Exchange(ctx, code, opts...)
+}
+
+func (p *facebookProvider) refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
+	return p.ProviderConfig.TokenSource(ctx, token).Token()
+}
+
+func (p *facebookProvider) getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
+	client := p.ProviderConfig.Client(ctx, token)
 	resp, err := client.Get("https://graph.facebook.com/v2.12/me?fields=id,email,name,picture")
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var userInfo struct {
-		ID      string `json:"id"`
-		Email   string `json:"email"`
-		Name    string `json:"name"`
-		Picture string `json:"picture"`
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&userInfo)
+	user, err := parseJSONFromReader(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return &UserInfo{
-		Email:         userInfo.Email,
-		EmailVerified: true,
-		Name:          userInfo.Name,
-		Picture:       userInfo.Picture,
-		Locale:        "",
-	}, nil
+
+	userInfo := NewUserInfo()
+	if id, ok := user["id"]; ok {
+		userInfo.setID(id.(string))
+	}
+	if name, ok := user["name"]; ok {
+		userInfo.setName(name.(string))
+	}
+	if email, ok := user["email"]; ok {
+		userInfo.setEmail(email.(string))
+	}
+	if picture, ok := user["picture"]; ok {
+		if pictureMap, ok := picture.(map[string]interface{}); ok {
+			if data, ok := pictureMap["data"].(map[string]interface{}); ok {
+				if url, ok := data["url"].(string); ok {
+					userInfo.setPictureURL(url)
+				}
+			}
+		}
+	}
+	return userInfo, nil
+}
+
+func newFacebookProvider(config ProviderConfig) *facebookProvider {
+	// facebook endpoint
+	config.setAuthURL(facebook.Endpoint.AuthURL)
+	config.setTokenURL(facebook.Endpoint.TokenURL)
+	config.addScopes("email", "public_profile")
+	return &facebookProvider{
+		ProviderConfig: config,
+	}
 }

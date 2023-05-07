@@ -2,76 +2,51 @@ package oauth2providers
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/oauth2"
 )
 
-type ProviderType string
+type ProviderType int
 
 const (
-	GoogleOAuth2ProviderType   ProviderType = "google"
-	FacebookOAuth2ProviderType ProviderType = "facebook"
-	LineOAuth2ProviderType     ProviderType = "line"
-	// GithubOAuth2ProviderType   ProviderType = "github"
+	GoogleOAuth2ProviderType ProviderType = iota
+	FacebookOAuth2ProviderType
+	LineOAuth2ProviderType
+	// GithubOAuth2ProviderType
 )
 
-type Provider struct {
-	providerType ProviderType
-	authOptions  *authOptions
+type OAuth2Provider interface {
+	authCodeURL(state string, opts ...oauth2.AuthCodeOption) string
+	exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error)
+	getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error)
+	refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error)
 }
 
-type UserInfo struct {
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Name          string `json:"name"`
-	Picture       string `json:"picture"`
-	Locale        string `json:"locale"`
+func (t ProviderType) String() string {
+	switch t {
+	case GoogleOAuth2ProviderType:
+		return "Google"
+	case FacebookOAuth2ProviderType:
+		return "Facebook"
+	case LineOAuth2ProviderType:
+		return "Line"
+	default:
+		return ""
+	}
 }
 
-func NewProvider(providerType ProviderType, authOptions *authOptions) *Provider {
-	var provider *Provider
+func NewOAuth2Provider(providerType ProviderType, providerConfig ProviderConfig) (OAuth2Provider, error) {
+	var provider OAuth2Provider
 	switch providerType {
 	case GoogleOAuth2ProviderType:
-		provider = newGoogle(
-			authOptions,
-		)
+		provider = newGoogleProvider(providerConfig)
 	case FacebookOAuth2ProviderType:
-		provider = newFacebook(
-			authOptions,
-		)
+		provider = newFacebookProvider(providerConfig)
 	case LineOAuth2ProviderType:
-		provider = newLine(
-			authOptions,
-		)
+		provider = newLineProvider(providerConfig)
 	default:
-		panic("Invalid OAuth2 provider type")
+		return nil, fmt.Errorf("unknown OAuth2 provider type: %s", providerType)
 	}
-	provider.providerType = providerType
-	return provider
-}
-
-func (p *Provider) AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
-	return p.authOptions.AuthCodeURL(state, opts...)
-}
-
-func (p *Provider) Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
-	return p.authOptions.Exchange(ctx, code, opts...)
-}
-
-func (p *Provider) GetUserInfo(ctx context.Context, token *oauth2.Token) (*UserInfo, error) {
-	switch p.providerType {
-	case GoogleOAuth2ProviderType:
-		return getGoogleUserInfo(ctx, p.authOptions, token)
-	case FacebookOAuth2ProviderType:
-		return getFacebookUserInfo(ctx, p.authOptions, token)
-	case LineOAuth2ProviderType:
-		return getLineUserInfo(ctx, p.authOptions, token)
-	default:
-		panic("Invalid OAuth2 provider type")
-	}
-}
-
-// refresh
-func (p *Provider) RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
-	return p.authOptions.TokenSource(ctx, token).Token()
+	return provider, nil
 }
