@@ -7,19 +7,19 @@ import (
 )
 
 type lineProvider struct {
-	ProviderConfig ProviderConfig
+	ProviderConfig
 }
 
 func (p *lineProvider) authCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
-	return p.ProviderConfig.AuthCodeURL(state, opts...)
+	return p.AuthCodeURL(state, opts...)
 }
 
 func (p *lineProvider) exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
-	return p.ProviderConfig.Exchange(ctx, code, opts...)
+	return p.Exchange(ctx, code, opts...)
 }
 
 func (p *lineProvider) refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
-	return p.ProviderConfig.TokenSource(ctx, token).Token()
+	return p.TokenSource(ctx, token).Token()
 }
 
 func newLineProvider(config ProviderConfig) *lineProvider {
@@ -34,7 +34,7 @@ func newLineProvider(config ProviderConfig) *lineProvider {
 }
 
 func (p *lineProvider) getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
-	client := p.ProviderConfig.Client(ctx, token)
+	client := p.Client(ctx, token)
 	resp, err := client.Get("https://api.line.me/v2/profile")
 	if err != nil {
 		return nil, err

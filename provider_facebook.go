@@ -8,23 +8,23 @@ import (
 )
 
 type facebookProvider struct {
-	ProviderConfig ProviderConfig
+	ProviderConfig
 }
 
 func (p *facebookProvider) authCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
-	return p.ProviderConfig.AuthCodeURL(state, opts...)
+	return p.AuthCodeURL(state, opts...)
 }
 
 func (p *facebookProvider) exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
-	return p.ProviderConfig.Exchange(ctx, code, opts...)
+	return p.Exchange(ctx, code, opts...)
 }
 
 func (p *facebookProvider) refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
-	return p.ProviderConfig.TokenSource(ctx, token).Token()
+	return p.TokenSource(ctx, token).Token()
 }
 
 func (p *facebookProvider) getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
-	client := p.ProviderConfig.Client(ctx, token)
+	client := p.Client(ctx, token)
 	resp, err := client.Get("https://graph.facebook.com/v2.12/me?fields=id,email,name,picture")
 	if err != nil {
 		return nil, err

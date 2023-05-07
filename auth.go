@@ -14,13 +14,16 @@ type Auth interface {
 }
 
 type auth struct {
+	AuthConfig
 	provider OAuth2Provider
 }
 
-func NewAuth(provider OAuth2Provider) Auth {
-	return &auth{
-		provider: provider,
+func NewAuth(provider OAuth2Provider, authConfig AuthConfig) Auth {
+	a := &auth{
+		AuthConfig: authConfig,
+		provider:   provider,
 	}
+	return a
 }
 
 func (a *auth) Login(ctx context.Context, options ...oauth2.AuthCodeOption) string {

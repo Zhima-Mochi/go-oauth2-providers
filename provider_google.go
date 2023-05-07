@@ -8,19 +8,19 @@ import (
 )
 
 type googleProvider struct {
-	ProviderConfig ProviderConfig
+	ProviderConfig
 }
 
 func (p *googleProvider) authCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
-	return p.ProviderConfig.AuthCodeURL(state, opts...)
+	return p.AuthCodeURL(state, opts...)
 }
 
 func (p *googleProvider) exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
-	return p.ProviderConfig.Exchange(ctx, code, opts...)
+	return p.Exchange(ctx, code, opts...)
 }
 
 func (p *googleProvider) refreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
-	return p.ProviderConfig.TokenSource(ctx, token).Token()
+	return p.TokenSource(ctx, token).Token()
 }
 
 func newGoogleProvider(config ProviderConfig) *googleProvider {
@@ -34,7 +34,7 @@ func newGoogleProvider(config ProviderConfig) *googleProvider {
 }
 
 func (p *googleProvider) getUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
-	client := p.ProviderConfig.Client(ctx, token)
+	client := p.Client(ctx, token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
 		return nil, err
