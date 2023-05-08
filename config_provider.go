@@ -93,16 +93,15 @@ func (pc *providerConfig) Client(ctx context.Context, token Token) *http.Client 
 }
 
 func (pc *providerConfig) addScopes(scopes ...string) {
+	hasSeen := map[string]bool{}
+	for _, scope := range pc.scopes {
+		hasSeen[scope] = true
+	}
+
 	for _, scope := range scopes {
-		flag := false
-		for _, s := range pc.scopes {
-			if s == scope {
-				flag = true
-				break
-			}
-		}
-		if !flag {
+		if _, ok := hasSeen[scope]; !ok {
 			pc.scopes = append(pc.scopes, scope)
+			hasSeen[scope] = true
 		}
 	}
 
