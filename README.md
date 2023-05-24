@@ -29,8 +29,8 @@ googleAuth := oauth2providers.NewAuth(oauth2Provider, nil)
 ```go
 type Auth interface {
 	GetOAuth2AuthCodeURL(ctx context.Context, options ...AuthCodeOption) (url string)
-	ExchangeOAuth2AuthCode(ctx context.Context, code string) (token Token, err error)
-	RefreshOAuth2Token(ctx context.Context, refreshToken Token) (token Token, err error)
-	GetOAuth2UserInfo(ctx context.Context, token Token) (userInfo UserInfo, err error)
+	ExchangeOAuth2AuthCode(ctx context.Context, code string) (token *Token, err error)
+	RefreshOAuth2Token(ctx context.Context, refreshToken *Token) (token *Token, err error)
+	GetOAuth2UserInfo(ctx context.Context, token *Token) (userInfo UserInfo, err error)
 }
 ```

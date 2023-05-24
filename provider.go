@@ -16,9 +16,9 @@ const (
 
 type OAuth2Provider interface {
 	authCodeURL(state string, opts ...AuthCodeOption) string
-	exchange(ctx context.Context, code string, opts ...AuthCodeOption) (Token, error)
-	getUserInfo(ctx context.Context, token Token) (UserInfo, error)
-	refreshToken(ctx context.Context, token Token) (Token, error)
+	exchange(ctx context.Context, code string, opts ...AuthCodeOption) (*Token, error)
+	getUserInfo(ctx context.Context, token *Token) (UserInfo, error)
+	refreshToken(ctx context.Context, token *Token) (*Token, error)
 }
 
 func (t ProviderType) String() string {

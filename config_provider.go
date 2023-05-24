@@ -22,9 +22,9 @@ var (
 
 type ProviderConfig interface {
 	AuthCodeURL(state string, opts ...AuthCodeOption) string
-	Exchange(ctx context.Context, code string, opts ...AuthCodeOption) (Token, error)
-	TokenSource(ctx context.Context, token Token) oauth2.TokenSource
-	Client(ctx context.Context, token Token) *http.Client
+	Exchange(ctx context.Context, code string, opts ...AuthCodeOption) (*Token, error)
+	TokenSource(ctx context.Context, token *Token) oauth2.TokenSource
+	Client(ctx context.Context, token *Token) *http.Client
 	addScopes(scopes ...string)
 	setAuthURL(authURL string)
 	setTokenURL(tokenURL string)
@@ -80,15 +80,15 @@ func (pc *providerConfig) AuthCodeURL(state string, opts ...AuthCodeOption) stri
 	return pc.Config.AuthCodeURL(state, convertAuthCodeOptions(opts)...)
 }
 
-func (pc *providerConfig) Exchange(ctx context.Context, code string, opts ...AuthCodeOption) (Token, error) {
+func (pc *providerConfig) Exchange(ctx context.Context, code string, opts ...AuthCodeOption) (*Token, error) {
 	return pc.Config.Exchange(ctx, code, convertAuthCodeOptions(opts)...)
 }
 
-func (pc *providerConfig) TokenSource(ctx context.Context, token Token) oauth2.TokenSource {
+func (pc *providerConfig) TokenSource(ctx context.Context, token *Token) oauth2.TokenSource {
 	return pc.Config.TokenSource(ctx, token)
 }
 
-func (pc *providerConfig) Client(ctx context.Context, token Token) *http.Client {
+func (pc *providerConfig) Client(ctx context.Context, token *Token) *http.Client {
 	return pc.Config.Client(ctx, token)
 }
 

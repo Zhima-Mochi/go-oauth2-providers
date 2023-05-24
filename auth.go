@@ -14,9 +14,9 @@ var (
 
 type Auth interface {
 	GetOAuth2AuthCodeURL(ctx context.Context, options ...AuthCodeOption) (url string)
-	ExchangeOAuth2AuthCode(ctx context.Context, code string) (token Token, err error)
-	RefreshOAuth2Token(ctx context.Context, refreshToken Token) (token Token, err error)
-	GetOAuth2UserInfo(ctx context.Context, token Token) (userInfo UserInfo, err error)
+	ExchangeOAuth2AuthCode(ctx context.Context, code string) (token *Token, err error)
+	RefreshOAuth2Token(ctx context.Context, refreshToken *Token) (token *Token, err error)
+	GetOAuth2UserInfo(ctx context.Context, token *Token) (userInfo UserInfo, err error)
 }
 
 type auth struct {
@@ -38,7 +38,7 @@ func (a *auth) GetOAuth2AuthCodeURL(ctx context.Context, options ...AuthCodeOpti
 	return url
 }
 
-func (a *auth) ExchangeOAuth2AuthCode(ctx context.Context, code string) (token Token, err error) {
+func (a *auth) ExchangeOAuth2AuthCode(ctx context.Context, code string) (token *Token, err error) {
 	token, err = a.provider.exchange(ctx, code)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (a *auth) ExchangeOAuth2AuthCode(ctx context.Context, code string) (token T
 	return token, nil
 }
 
-func (a *auth) RefreshOAuth2Token(ctx context.Context, refreshToken Token) (token Token, err error) {
+func (a *auth) RefreshOAuth2Token(ctx context.Context, refreshToken *Token) (token *Token, err error) {
 	newToken, err := a.provider.refreshToken(ctx, refreshToken)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (a *auth) RefreshOAuth2Token(ctx context.Context, refreshToken Token) (toke
 	return token, nil
 }
 
-func (a *auth) GetOAuth2UserInfo(ctx context.Context, token Token) (userInfo UserInfo, err error) {
+func (a *auth) GetOAuth2UserInfo(ctx context.Context, token *Token) (userInfo UserInfo, err error) {
 	userInfo, err = a.provider.getUserInfo(ctx, token)
 	if err != nil {
 		return nil, err

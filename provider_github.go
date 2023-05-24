@@ -15,11 +15,11 @@ func (p *githubProvider) authCodeURL(state string, opts ...AuthCodeOption) strin
 	return p.AuthCodeURL(state, opts...)
 }
 
-func (p *githubProvider) exchange(ctx context.Context, code string, opts ...AuthCodeOption) (Token, error) {
+func (p *githubProvider) exchange(ctx context.Context, code string, opts ...AuthCodeOption) (*Token, error) {
 	return p.Exchange(ctx, code, opts...)
 }
 
-func (p *githubProvider) refreshToken(ctx context.Context, token Token) (Token, error) {
+func (p *githubProvider) refreshToken(ctx context.Context, token *Token) (*Token, error) {
 	return p.TokenSource(ctx, token).Token()
 }
 
@@ -33,7 +33,7 @@ func newGithubProvider(config ProviderConfig) *githubProvider {
 	}
 }
 
-func (p *githubProvider) getUserInfo(ctx context.Context, token Token) (UserInfo, error) {
+func (p *githubProvider) getUserInfo(ctx context.Context, token *Token) (UserInfo, error) {
 	client := p.Client(ctx, token)
 	resp, err := client.Get("https://api.github.com/user")
 	if err != nil {
