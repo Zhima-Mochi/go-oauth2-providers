@@ -1,36 +1,44 @@
-# go-oauth2-providers
+# Go OAuth2 Providers
 go-oauth2-providers is a Go library for OAuth2 authentication integration. It provides a unified interface to create OAuth2 provider instances and retrieve user information, and supports multiple providers, including Google, Facebook, and GitHub. It's extensively tested and can be used in projects of any size.
 
-## Usage
+## Table of Contents
+- [Installation](#installation)
+- [Supported Providers](#supported-providers)
+- [Components](#components)
+- [Example](#example)
+- [License](#license)
 
-```go
-// Create an empty ProviderOption slice
-providerOptions := []oauth2providers.ProviderOption{}
+## Installation
 
-// Add Google OAuth2 Client ID to the ProviderOption slice
-providerOptions = append(providerOptions, oauth2providers.WithProviderClientID("<YOUR_CLIENT_ID>"))
+To install the `go-oauth2-providers` package, you can use the `go get` command:
 
-// Add Google OAuth2 Client Secret to the ProviderOption slice
-providerOptions = append(providerOptions, oauth2providers.WithProviderClientSecret("<YOUR_CLIENT_SECRET>"))
-
-// Add Google OAuth2 Redirect URL to the ProviderOption slice
-providerOptions = append(providerOptions, oauth2providers.WithProviderRedirectURL("<YOUR_REDIRECT_URL>"))
-
-// Create a ProviderConfig object with the ProviderOption slice
-providerConfig, _ := oauth2providers.NewProviderConfig(providerOptions...)
-
-// Create an OAuth2Provider object with the GoogleOAuth2ProviderType and the ProviderConfig object
-oauth2Provider, _ := oauth2providers.NewOAuth2Provider(oauth2providers.GoogleOAuth2ProviderType, providerConfig)
-
-// Create a new Auth object with the OAuth2Provider object
-googleAuth := oauth2providers.NewAuth(oauth2Provider, nil)
+```shell
+go get github.com/Zhima-Mochi/go-oauth2-providers
 ```
-### Auth Interface
-```go
-type Auth interface {
-	GetOAuth2AuthCodeURL(ctx context.Context, options ...AuthCodeOption) (url string)
-	ExchangeOAuth2AuthCode(ctx context.Context, code string) (token *Token, err error)
-	RefreshOAuth2Token(ctx context.Context, refreshToken *Token) (token *Token, err error)
-	GetOAuth2UserInfo(ctx context.Context, token *Token) (userInfo UserInfo, err error)
-}
-```
+
+## Supported Providers
+
+The `go-oauth2-providers` package currently supports the following OAuth2 providers:
+
+- Facebook
+- GitHub
+- Google
+- Line
+
+Each provider implementation includes files such as `provider_xxx.go`, `config_provider.go`, `options_provider.go`, `authCodeOption.go`, `token.go`, and `user.go`, along with other utility files. These files provide the necessary logic and structures for interacting with the respective OAuth2 provider.
+
+## Components
+
+The `go-oauth2-providers` package includes the following components:
+
+- `Auth` - The `Auth` component is the main component of the `go-oauth2-providers` package. It contains all the necessary information for interacting with an OAuth2 provider, including retrieving the authorization URL, exchanging the authorization code for an access token, and retrieving the user information.
+
+- `Provider` - The `Provider` component is the factory for creating `Auth` instances. It contains the necessary information for creating an `Auth` instance, including the provider's name, configuration, and options.
+
+## Example
+
+See [Example](./example/main.go) for a simple example of how to use the `go-oauth2-providers` package.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
